@@ -1,0 +1,14 @@
+/* မြန်မာစာလုံးအတွက် Google Font သုံးခြင်း */
+@import url('https://fonts.googleapis.com/css2?family=Pyidaungsu&family=Padauk:wght@400;700&display=swap');
+
+.font-myanmar {
+    font-family: 'Padauk', 'Pyidaungsu', sans-serif;
+}
+
+/* စာသားတွေ အရမ်းရှည်ရင် ဖြတ်ချဖို့ (Line Clamp) */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+}
