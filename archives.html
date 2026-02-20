@@ -10,12 +10,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Padauk', sans-serif; background: #f0f2f5; }
-        .archive-card { background: #ffffff; border-radius: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
-        .year-btn { background: #1e293b; color: white; transition: all 0.3s; }
-        .month-btn { background: #ffffff; border: 1px solid #fce7f3; transition: all 0.3s; }
-        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(10px); }
+        .archive-card { background: #ffffff; border-radius: 1.5rem; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+        .year-btn { background: #0f172a; color: white; }
+        .month-btn { background: #ffffff; border: 1px solid #fce7f3; }
+        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(10px); }
         .modal-content-box { white-space: pre-line; }
-        .hidden-content { display: none; }
     </style>
 </head>
 <body class="pb-20">
@@ -23,19 +22,19 @@
     <div class="max-w-[480px] mx-auto p-6">
         <header class="text-center mb-8">
             <h1 class="text-3xl font-bold text-pink-600 mb-2">📂 Archives</h1>
-            <p class="text-slate-400 text-[10px] tracking-widest uppercase italic">ခေါင်းစဉ်များကိုနှိပ်၍ မှတ်တမ်းများပြန်ဖတ်နိုင်သည်</p>
+            <p class="text-slate-400 text-[10px] tracking-widest uppercase font-bold">တို့နှစ်ယောက်ရဲ့ မှတ်တမ်းများ</p>
         </header>
 
         <div id="archivesContainer" class="space-y-4">
-            <div class="text-center py-20 text-slate-400">Loading Memories...</div>
-        </div>
+            </div>
     </div>
 
     <div id="modal" onclick="closeModal()">
         <div class="bg-white p-8 rounded-[2.5rem] max-w-[450px] w-full mx-auto shadow-2xl relative animate-in fade-in zoom-in duration-300" onclick="event.stopPropagation()">
-            <h3 id="modal-title" class="text-pink-600 font-bold mb-5 border-b-2 border-pink-50 pb-4 text-xl text-center leading-relaxed"></h3>
-            <div id="modal-content" class="modal-content-box text-black text-[17px] leading-[1.8] overflow-y-auto max-h-[480px] pr-2 text-justify font-bold tracking-tight"></div>
-            <button onclick="closeModal()" class="mt-8 w-full bg-slate-950 text-white py-4 rounded-2xl font-bold uppercase tracking-widest active:scale-95 transition-all">Close</button>
+            <img id="modal-image" class="hidden w-full h-48 object-cover rounded-2xl mb-5 shadow-md">
+            <h3 id="modal-title" class="text-pink-600 font-bold mb-4 border-b pb-3 text-xl text-center"></h3>
+            <div id="modal-content" class="modal-content-box text-black text-[17px] leading-relaxed overflow-y-auto max-h-[350px] pr-2 text-justify font-bold"></div>
+            <button onclick="closeModal()" class="mt-8 w-full bg-slate-900 text-white py-4 rounded-2xl font-bold active:scale-95 transition-all">Close</button>
         </div>
     </div>
 
@@ -55,58 +54,49 @@
         database.ref('allPosts').on('value', (snap) => {
             const container = document.getElementById('archivesContainer');
             container.innerHTML = "";
-            
-            if(!snap.exists()) {
-                container.innerHTML = "<p class='text-center text-slate-400'>မှတ်တမ်းများ မရှိသေးပါ။</p>";
-                return;
-            }
+            if(!snap.exists()) return;
 
             let years = {};
-
             snap.forEach(c => {
                 let data = c.val();
                 data.key = c.key;
                 let postDate = data.timestamp ? new Date(data.timestamp) : new Date();
                 let year = postDate.getFullYear();
                 let month = postDate.toLocaleString('en-US', { month: 'long' });
-
                 if (!years[year]) years[year] = {};
                 if (!years[year][month]) years[year][month] = [];
                 years[year][month].unshift(data);
             });
 
-            // နှစ်အလိုက် စီမယ်
             const sortedYears = Object.keys(years).sort().reverse();
-
             sortedYears.forEach(year => {
                 let yearSection = document.createElement('div');
                 yearSection.className = "mb-4";
-                
                 yearSection.innerHTML = `
-                    <div onclick="toggleSection('year-${year}')" class="year-btn flex justify-between items-center p-5 rounded-3xl cursor-pointer shadow-md">
-                        <span class="font-bold text-lg">🗓 ${year} ခုနှစ်</span>
-                        <span id="icon-year-${year}" class="text-pink-400">▼</span>
+                    <div onclick="toggleSection('year-${year}')" class="year-btn flex justify-between items-center p-5 rounded-3xl cursor-pointer shadow-lg">
+                        <span class="font-bold text-lg">🗓 ${year}</span>
+                        <span id="icon-year-${year}">▼</span>
                     </div>
-                    <div id="year-${year}" class="hidden-content mt-3 space-y-3 px-2">
-                        </div>
+                    <div id="year-${year}" class="hidden mt-3 space-y-3 px-1"></div>
                 `;
                 container.appendChild(yearSection);
                 const yearBody = document.getElementById(`year-${year}`);
 
-                // လအလိုက် ထပ်စီမယ်
-                const months = Object.keys(years[year]);
-                months.forEach(month => {
+                Object.keys(years[year]).forEach(month => {
                     let monthGroup = document.createElement('div');
                     monthGroup.innerHTML = `
-                        <div onclick="toggleSection('month-${year}-${month}')" class="month-btn flex justify-between items-center p-4 rounded-2xl cursor-pointer shadow-sm">
+                        <div onclick="toggleSection('month-${year}-${month}')" class="month-btn flex justify-between items-center p-4 rounded-2xl cursor-pointer shadow-sm mb-2">
                             <span class="text-pink-600 font-bold text-sm">${month}</span>
-                            <span id="icon-month-${year}-${month}" class="text-pink-300 text-xs">▶</span>
+                            <span id="icon-month-${year}-${month}" class="text-pink-300">▶</span>
                         </div>
-                        <div id="month-${year}-${month}" class="hidden-content space-y-3 mt-3 px-2">
+                        <div id="month-${year}-${month}" class="hidden space-y-4 mb-6 px-1">
                             ${years[year][month].map(p => `
-                                <div class="archive-card p-5 border-l-4 border-pink-400">
-                                    <h2 class="text-[14px] font-bold text-slate-800 leading-snug">${p.title}</h2>
-                                    <button onclick="openFullPost('${p.key}')" class="text-pink-500 font-bold text-[10px] mt-2 uppercase tracking-tighter">View Memory →</button>
+                                <div class="archive-card p-0 border border-pink-50">
+                                    ${p.imageUrl ? `<img src="${p.imageUrl}" class="w-full h-40 object-cover">` : ''}
+                                    <div class="p-5">
+                                        <h2 class="text-md font-bold text-slate-800 leading-snug">${p.title}</h2>
+                                        <button onclick="openFullPost('${p.key}')" class="text-pink-500 font-bold text-[10px] mt-3 uppercase">Read Full →</button>
+                                    </div>
                                 </div>
                             `).join('')}
                         </div>
@@ -116,17 +106,15 @@
             });
         });
 
-        // ပွင့်/ပိတ် လုပ်ပေးမည့် Function
         function toggleSection(id) {
             const el = document.getElementById(id);
             const icon = document.getElementById('icon-' + id);
-            if (el.style.display === "block") {
-                el.style.display = "none";
-                icon.innerText = id.startsWith('year') ? "▼" : "▶";
-                icon.classList.remove('rotate-180');
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                icon.innerText = "▲";
             } else {
-                el.style.display = "block";
-                icon.innerText = id.startsWith('year') ? "▲" : "▼";
+                el.classList.add('hidden');
+                icon.innerText = id.startsWith('year') ? "▼" : "▶";
             }
         }
 
@@ -135,6 +123,9 @@
                 const data = snap.val();
                 document.getElementById('modal-title').innerText = data.title;
                 document.getElementById('modal-content').innerText = data.content;
+                const mImg = document.getElementById('modal-image');
+                if(data.imageUrl) { mImg.src = data.imageUrl; mImg.classList.remove('hidden'); }
+                else { mImg.classList.add('hidden'); }
                 document.getElementById('modal').style.display = 'flex';
                 document.body.style.overflow = 'hidden';
             });
