@@ -10,35 +10,37 @@
     <link href="https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Padauk', sans-serif; background: #fff1f2; }
-        .post-card { background: white; border-radius: 2rem; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+        .post-card { background: white; border-radius: 2rem; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); transition: transform 0.3s; }
         .hidden { display: none; }
+        .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
     </style>
 </head>
 <body class="pb-10">
 
     <div class="max-w-[480px] mx-auto p-6">
         <header class="text-center py-10">
-            <h1 class="text-4xl font-black text-pink-600 tracking-tighter">Latest Updates</h1>
-            <p class="text-slate-400 text-xs mt-2 uppercase tracking-[0.2em] font-bold">တို့နှစ်ယောက်ရဲ့ အမှတ်တရသစ်များ</p>
+            <h1 class="text-4xl font-black text-pink-600 tracking-tighter italic">Latest Updates</h1>
+            <p class="text-slate-400 text-xs mt-2 uppercase tracking-widest font-bold">တို့နှစ်ယောက်ရဲ့ ကမ္ဘာလေး</p>
         </header>
 
-        <div id="latestPosts" class="space-y-8">
-            <p class="text-center text-slate-400 animate-pulse">Memories are loading...</p>
+        <div id="latestPosts" class="space-y-10">
+            <p class="text-center text-slate-400">Memories are loading...</p>
         </div>
 
-        <div class="mt-12 text-center">
-            <a href="archives.html" class="inline-block bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-all">
-                View All Memories 📂
+        <div class="mt-16 text-center">
+            <p class="text-slate-300 text-[10px] uppercase tracking-[0.3em] mb-4">End of Updates</p>
+            <a href="archives.html" class="inline-block bg-slate-900 text-white px-10 py-4 rounded-2xl font-bold shadow-xl active:scale-95 transition-all">
+                Go to Archives 📂
             </a>
         </div>
     </div>
 
-    <div id="modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-5 backdrop-blur-md" onclick="closeModal()">
-        <div class="bg-white p-6 rounded-[2.5rem] max-w-[450px] w-full max-h-[85vh] overflow-y-auto relative" onclick="event.stopPropagation()">
-            <img id="modal-img" class="hidden w-full h-56 object-cover rounded-[1.8rem] mb-5 shadow-sm">
-            <h2 id="modal-title" class="text-xl font-bold text-pink-600 border-b-2 border-pink-50 pb-4 mb-4 text-center leading-relaxed"></h2>
-            <p id="modal-content" class="text-slate-800 text-[16px] leading-[1.8] text-justify font-bold whitespace-pre-line pr-1"></p>
-            <button onclick="closeModal()" class="w-full mt-8 bg-pink-500 text-white py-4 rounded-2xl font-bold shadow-pink-200 shadow-lg active:scale-95 transition-all">Close</button>
+    <div id="modal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-5 backdrop-blur-md" onclick="closeModal()">
+        <div class="bg-white p-6 rounded-[2.5rem] max-w-[450px] w-full max-h-[85vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <img id="modal-img" class="hidden w-full h-56 object-cover rounded-[1.8rem] mb-5 shadow-md">
+            <h2 id="modal-title" class="text-xl font-bold text-pink-600 border-b-2 border-pink-50 pb-4 mb-4 text-center"></h2>
+            <p id="modal-content" class="text-slate-800 text-[17px] leading-relaxed text-justify font-bold whitespace-pre-line"></p>
+            <button onclick="closeModal()" class="w-full mt-8 bg-pink-500 text-white py-4 rounded-2xl font-bold active:scale-95 transition-all">Close</button>
         </div>
     </div>
 
@@ -55,8 +57,8 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // နောက်ဆုံးတင်တဲ့ ၅ ခုပဲ ဆွဲထုတ်မယ်
-        database.ref('allPosts').orderByChild('timestamp').limitToLast(5).on('value', (snap) => {
+        // ပို့စ်တွေအကုန်လုံးကို ဆွဲထုတ်မယ် (Limit ဖြုတ်လိုက်ပြီ)
+        database.ref('allPosts').on('value', (snap) => {
             const container = document.getElementById('latestPosts');
             container.innerHTML = "";
 
@@ -69,17 +71,17 @@
             snap.forEach(child => {
                 let data = child.val();
                 data.key = child.key;
-                posts.unshift(data); // နောက်ဆုံးတင်တာ ထိပ်ရောက်အောင်စီ
+                posts.unshift(data); // အသစ်တင်တာ ထိပ်ဆုံးရောက်မယ်
             });
 
             posts.forEach(p => {
                 let card = `
-                    <div class="post-card border border-pink-50">
-                        ${p.imageUrl ? `<img src="${p.imageUrl}" class="w-full h-52 object-cover">` : ''}
-                        <div class="p-6">
-                            <h2 class="text-xl font-bold text-slate-800 mb-2 leading-tight">${p.title}</h2>
-                            <p class="text-slate-500 text-sm line-clamp-2 leading-relaxed mb-4">${p.content}</p>
-                            <button onclick="openFull('${p.key}')" class="text-pink-500 font-black text-xs uppercase tracking-widest flex items-center">
+                    <div class="post-card border border-white">
+                        ${p.imageUrl ? `<img src="${p.imageUrl}" class="w-full h-56 object-cover">` : ''}
+                        <div class="p-7">
+                            <h2 class="text-xl font-bold text-slate-800 mb-3">${p.title}</h2>
+                            <p class="text-slate-500 text-sm line-clamp-3 leading-relaxed mb-5 font-bold">${p.content}</p>
+                            <button onclick="openFull('${p.key}')" class="text-pink-500 font-black text-[11px] uppercase tracking-widest flex items-center border-b-2 border-pink-100 pb-1">
                                 Continue Reading <span class="ml-2">→</span>
                             </button>
                         </div>
