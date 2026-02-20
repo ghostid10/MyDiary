@@ -11,49 +11,14 @@
     <style>
         body { font-family: 'Padauk', sans-serif; background: #f0f2f5; overflow-x: hidden; }
         .handwriting { font-family: 'Dancing Script', cursive; }
-        
-        .app-card { 
-            background: #ffffff; 
-            border-radius: 2rem; 
-            box-shadow: 8px 8px 16px #bebebe, -8px -8px 16px #ffffff;
-            transition: all 0.2s ease;
-        }
+        .app-card { background: #ffffff; border-radius: 2rem; box-shadow: 8px 8px 16px #bebebe, -8px -8px 16px #ffffff; transition: all 0.2s ease; }
         .app-card:active { transform: scale(0.97); }
-
         .grid-layout { display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px; padding: 0 20px 20px 20px; max-width: 480px; margin: 0 auto; }
         .box-1, .box-2, .box-3 { grid-column: span 2; }
         .box-music, .box-updates, .box-archive { grid-column: span 6; }
-        
-        .premium-msg-box {
-            background: #111111;
-            border: 2px solid #fbcfe8;
-            border-radius: 1.5rem;
-            position: relative;
-            overflow: hidden;
-            height: 90px; 
-            max-width: 440px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-
-        .heart-particle {
-            position: absolute;
-            color: #ff4d94;
-            font-size: 14px;
-            pointer-events: none;
-            text-shadow: 0 0 10px #ff4d94;
-            animation: explode 2s ease-out forwards;
-            z-index: 5;
-        }
-
-        @keyframes explode {
-            0% { transform: translate(0, 0) scale(0); opacity: 1; }
-            100% { transform: translate(var(--tx), var(--ty)) scale(1.5); opacity: 0; }
-        }
-
+        .premium-msg-box { background: #111111; border: 2px solid #fbcfe8; border-radius: 1.5rem; position: relative; overflow: hidden; height: 90px; max-width: 440px; margin: 0 auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .heart-particle { position: absolute; color: #ff4d94; font-size: 14px; pointer-events: none; text-shadow: 0 0 10px #ff4d94; animation: explode 2s ease-out forwards; z-index: 5; }
+        @keyframes explode { 0% { transform: translate(0, 0) scale(0); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(1.5); opacity: 0; } }
         #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); }
     </style>
 </head>
@@ -113,8 +78,7 @@
 
         <div class="box-updates app-card p-6">
             <p class="text-[9px] text-pink-500 font-bold mb-4 uppercase tracking-widest border-b pb-1">Latest Updates</p>
-            <div id="recentDisplay" class="space-y-4">
-                </div>
+            <div id="recentDisplay" class="space-y-4"></div>
         </div>
 
         <div onclick="window.open('archives.html', '_blank')" class="box-archive app-card p-5 flex justify-between items-center cursor-pointer">
@@ -128,50 +92,13 @@
 
     <div id="modal" onclick="closeModal()">
         <div class="bg-white p-6 rounded-[2.5rem] max-w-[400px] w-full mx-4 shadow-2xl" onclick="event.stopPropagation()">
-            <h3 id="modal-title" class="text-pink-500 font-bold mb-3 border-b border-pink-50 pb-2 text-sm"></h3>
+            <h3 id="modal-title" class="text-pink-500 font-bold mb-3 border-b border-pink-50 pb-2 text-sm text-center"></h3>
             <p id="modal-content" class="text-slate-600 text-[11px] leading-relaxed whitespace-pre-line overflow-y-auto max-h-[300px] pr-2"></p>
             <button onclick="closeModal()" class="mt-6 w-full bg-slate-900 text-white text-[10px] py-3 rounded-xl font-bold uppercase">Close</button>
         </div>
     </div>
 
     <script>
-        function createHeart() {
-            const box = document.getElementById('msgBox');
-            if(!box) return;
-            const heart = document.createElement('div');
-            heart.innerHTML = '❤️';
-            heart.className = 'heart-particle';
-            const tx = (Math.random() - 0.5) * 300;
-            const ty = (Math.random() - 0.5) * 150;
-            heart.style.setProperty('--tx', `${tx}px`);
-            heart.style.setProperty('--ty', `${ty}px`);
-            heart.style.left = '50%';
-            heart.style.top = '50%';
-            box.appendChild(heart);
-            setTimeout(() => heart.remove(), 2000);
-        }
-        setInterval(createHeart, 250);
-
-        let currentSong = 0;
-        const songs = ["song1.mp3", "song2.mp3", "song3.mp3", "song4.mp3", "song5.mp3"];
-        let audio = new Audio();
-        let isPlaying = false;
-
-        function updateUI() {
-            document.getElementById('song-name').innerText = "Track " + (currentSong + 1);
-            document.getElementById('play-icon').innerText = isPlaying ? "⏸" : "▶️";
-            document.getElementById('song-status').innerText = isPlaying ? "Playing" : "Paused";
-        }
-
-        function toggleMusic() {
-            if(!audio.src || audio.src.includes('undefined')) audio.src = songs[currentSong];
-            if (!isPlaying) { audio.play().then(() => { isPlaying = true; updateUI(); }).catch(e => console.log(e)); }
-            else { audio.pause(); isPlaying = false; updateUI(); }
-        }
-        function playNext() { currentSong = (currentSong + 1) % songs.length; audio.src = songs[currentSong]; isPlaying = true; audio.play().then(() => updateUI()); }
-        function playPrev() { currentSong = (currentSong - 1 + songs.length) % songs.length; audio.src = songs[currentSong]; isPlaying = true; audio.play().then(() => updateUI()); }
-        audio.onended = () => playNext();
-
         const firebaseConfig = {
             apiKey: "AIzaSyCRUag3lfCii8IHnNGsW2TvcK-b8_YuqUY",
             authDomain: "oursecretdiary-d767a.firebaseapp.com",
@@ -184,35 +111,82 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // ပို့စ်တွေအကုန်ပေါ်စေရန် ပြင်ထားသောအပိုင်း
+        // ပို့စ်တွေကို ဆွဲထုတ်ပြတဲ့နေရာ (လုံးဝ Error မတက်အောင် ပြင်ထားသည်)
         database.ref('allPosts').on('value', (snap) => {
-            const container = document.getElementById('recentDisplay'); 
+            const container = document.getElementById('recentDisplay');
             container.innerHTML = "";
             if(!snap.exists()) return;
-            let posts = []; 
-            snap.forEach(c => { posts.unshift(c.val()); });
+            
+            let posts = [];
+            snap.forEach(c => { 
+                let data = c.val();
+                data.key = c.key; // ID ကို သိမ်းထားမယ်
+                posts.unshift(data); 
+            });
+
             posts.forEach(p => {
+                const postKey = p.key; 
                 container.innerHTML += `
                     <div class="bg-gray-50 p-3 rounded-xl border border-white shadow-sm mb-3">
                         <h4 class="text-[10px] font-bold text-slate-800">${p.title}</h4>
                         <p class="text-[9px] text-slate-500 mt-1">${p.content.substring(0, 60)}...</p>
-                        <button onclick="openModal('${p.title.replace(/'/g, "\\'")}', '${p.content.replace(/'/g, "\\'")}')" class="text-pink-400 text-[9px] font-bold mt-1">ဆက်ဖတ်ရန် →</button>
+                        <button onclick="fetchAndOpen('${postKey}')" class="text-pink-400 text-[9px] font-bold mt-1">ဆက်ဖတ်ရန် →</button>
                     </div>`;
             });
         });
 
-        function openModal(title, content) {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-content').innerText = content;
-            document.getElementById('modal').style.display = 'flex';
+        // စာသားကို Database ထဲကနေ တိုက်ရိုက်ပြန်ခေါ်ပြီး Modal ဖွင့်ပေးတဲ့ Function
+        function fetchAndOpen(key) {
+            database.ref('allPosts/' + key).once('value').then((snap) => {
+                const p = snap.val();
+                document.getElementById('modal-title').innerText = p.title;
+                document.getElementById('modal-content').innerText = p.content;
+                document.getElementById('modal').style.display = 'flex';
+            });
         }
+
         function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+        // Music & Timer logic
+        let currentSong = 0;
+        const songs = ["song1.mp3", "song2.mp3", "song3.mp3", "song4.mp3", "song5.mp3"];
+        let audio = new Audio();
+        let isPlaying = false;
+        function updateUI() {
+            document.getElementById('song-name').innerText = "Track " + (currentSong + 1);
+            document.getElementById('play-icon').innerText = isPlaying ? "⏸" : "▶️";
+            document.getElementById('song-status').innerText = isPlaying ? "Playing" : "Paused";
+        }
+        function toggleMusic() {
+            if(!audio.src || audio.src.includes('undefined')) audio.src = songs[currentSong];
+            if (!isPlaying) { audio.play().then(() => { isPlaying = true; updateUI(); }).catch(e => console.log(e)); }
+            else { audio.pause(); isPlaying = false; updateUI(); }
+        }
+        function playNext() { currentSong = (currentSong + 1) % songs.length; audio.src = songs[currentSong]; isPlaying = true; audio.play().then(() => updateUI()); }
+        function playPrev() { currentSong = (currentSong - 1 + songs.length) % songs.length; audio.src = songs[currentSong]; isPlaying = true; audio.play().then(() => updateUI()); }
+        audio.onended = () => playNext();
 
         const startDate = new Date("Jan 01, 2026 00:00:00").getTime(); 
         setInterval(() => {
             const diff = new Date().getTime() - startDate;
             document.getElementById("timer").innerHTML = Math.floor(diff/(1000*60*60*24)) + "d " + Math.floor((diff%(1000*60*60*24))/(1000*60*60)) + "h " + Math.floor((diff%(1000*60*60))/(1000*60)) + "m";
         }, 1000);
+
+        function createHeart() {
+            const box = document.getElementById('msgBox');
+            if(!box) return;
+            const heart = document.createElement('div');
+            heart.innerHTML = '❤️';
+            heart.className = 'heart-particle';
+            const tx = (Math.random() - 0.5) * 300;
+            const ty = (Math.random() - 0.5) * 150;
+            heart.style.setProperty('--tx', `${tx}px`);
+            heart.style.setProperty('--ty', `${ty}px`);
+            heart.style.left = '50%'; heart.style.top = '50%';
+            box.appendChild(heart);
+            setTimeout(() => heart.remove(), 2000);
+        }
+        setInterval(createHeart, 250);
     </script>
 </body>
 </html>
