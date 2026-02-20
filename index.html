@@ -3,121 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>For My Putuu</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="pink">
-    <link rel="apple-touch-icon" href="profile.jpg">
-
+    <title>Our Secret Diary</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Padauk:wght@400;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Padauk', sans-serif; background: #f0f2f5; overflow-x: hidden; }
-        .handwriting { font-family: 'Dancing Script', cursive; }
-        .app-card { background: #ffffff; border-radius: 2rem; box-shadow: 8px 8px 16px #bebebe, -8px -8px 16px #ffffff; transition: all 0.2s ease; }
-        .app-card:active { transform: scale(0.97); }
-        .grid-layout { display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px; padding: 0 20px 20px 20px; max-width: 480px; margin: 0 auto; }
-        .box-1, .box-2, .box-3 { grid-column: span 2; }
-        .box-music, .box-updates, .box-archive { grid-column: span 6; }
-        .premium-msg-box { background: #111111; border: 2px solid #fbcfe8; border-radius: 1.5rem; position: relative; overflow: hidden; height: 90px; max-width: 440px; margin: 0 auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        .heart-particle { position: absolute; color: #ff4d94; font-size: 14px; pointer-events: none; text-shadow: 0 0 10px #ff4d94; animation: explode 2s ease-out forwards; z-index: 5; }
-        @keyframes explode { 0% { transform: translate(0, 0) scale(0); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(1.5); opacity: 0; } }
-        
-        /* Modal Style ပြင်ဆင်မှု (အကြီးဖြစ်အောင်နှင့် ရှင်းလင်းအောင် ပြုလုပ်ထားသည်) */
-        #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; padding: 15px; backdrop-filter: blur(10px); }
-        .modal-content-box { white-space: pre-line; scrollbar-width: thin; scrollbar-color: #ec4899 #f3f4f6; }
+        body { font-family: 'Padauk', sans-serif; background: #fff1f2; }
+        .post-card { background: white; border-radius: 2rem; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+        .hidden { display: none; }
     </style>
 </head>
 <body class="pb-10">
 
-    <header class="p-6 pb-2 max-w-[480px] mx-auto w-full space-y-4">
-        <div class="flex justify-between items-center w-full">
-            <div class="bg-pink-500 px-3 py-1.5 rounded-2xl shadow-lg shrink-0">
-                <p class="text-white font-bold text-[10px]">ပူတူးလေးထံသို့ ❤️</p>
-            </div>
-            <div class="flex-grow text-center px-2">
-                <p class="text-pink-400 font-bold text-[11px] tracking-widest">✨ တို့နှစ်ယောက်ရဲ့ ဒိုင်ယာရီ ✨</p>
-            </div>
-            <div class="w-12 h-12 rounded-2xl bg-white p-1 shadow-md border border-white overflow-hidden shrink-0">
-                <img src="profile.jpg" alt="Love" class="w-full h-full object-cover rounded-xl" onerror="this.src='https://ui-avatars.com/api/?name=P&background=fce7f3&color=ec4899'">
-            </div>
+    <div class="max-w-[480px] mx-auto p-6">
+        <header class="text-center py-10">
+            <h1 class="text-4xl font-black text-pink-600 tracking-tighter">Latest Updates</h1>
+            <p class="text-slate-400 text-xs mt-2 uppercase tracking-[0.2em] font-bold">တို့နှစ်ယောက်ရဲ့ အမှတ်တရသစ်များ</p>
+        </header>
+
+        <div id="latestPosts" class="space-y-8">
+            <p class="text-center text-slate-400 animate-pulse">Memories are loading...</p>
         </div>
 
-        <div class="premium-msg-box px-6" id="msgBox">
-            <p class="text-pink-100 text-[11px] italic handwriting tracking-wide relative z-10 text-center leading-tight">
-                "အချိန်တွေ ဘယ်လောက်ပဲ ပြောင်းလဲပါစေ...<br>မင်းအပေါ်ထားတဲ့ ငါ့အချစ်တွေကတော့ ထာဝရပါ"
-            </p>
-        </div>
-    </header>
-
-    <div class="grid-layout mt-2">
-        <div class="box-1 app-card p-4 flex flex-col items-center justify-center text-center">
-            <p class="text-[8px] font-bold text-pink-400 uppercase">Birthday</p>
-            <p class="text-[10px] font-bold text-slate-700">07.07.2021</p>
-        </div>
-
-        <div onclick="window.open('archives.html', '_blank')" class="box-2 app-card p-4 flex flex-col items-center justify-center text-center cursor-pointer">
-            <p class="text-[9px] font-bold text-slate-700">အမှတ်တရ<br>စာစုများ</p>
-            <div class="text-pink-400 text-xs mt-1">❤️</div>
-        </div>
-
-        <div class="box-3 app-card bg-slate-900 p-4 flex flex-col items-center justify-center text-center">
-            <span class="text-[7px] text-pink-500 font-bold uppercase">Relationship</span>
-            <div id="timer" class="text-[9px] text-white font-mono font-bold">00d 00h 00m</div>
-        </div>
-
-        <div class="box-music app-card p-5">
-            <div class="flex items-center justify-between">
-                <div class="flex flex-col">
-                    <p id="song-name" class="text-[10px] font-bold text-slate-600">Music Player</p>
-                    <p id="song-status" class="text-[7px] text-pink-400 uppercase tracking-widest">Stopped</p>
-                </div>
-                <div class="flex items-center gap-4">
-                    <button onclick="playPrev()" class="text-slate-400 text-lg">⏮</button>
-                    <button id="play-btn" onclick="toggleMusic()" class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-pink-500 shadow-md">
-                        <span id="play-icon">▶️</span>
-                    </button>
-                    <button onclick="playNext()" class="text-slate-400 text-lg">⏭</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="box-updates app-card p-6">
-            <p class="text-[9px] text-pink-500 font-bold mb-4 uppercase tracking-widest border-b pb-1">Latest Updates</p>
-            <div id="recentDisplay" class="space-y-4"></div>
-        </div>
-
-        <div onclick="window.open('archives.html', '_blank')" class="box-archive app-card p-5 flex justify-between items-center cursor-pointer">
-            <div class="flex items-center gap-4">
-                <div class="w-8 h-8 bg-pink-50 rounded-xl flex items-center justify-center">📂</div>
-                <span class="text-[10px] font-bold text-slate-500 uppercase">Memory Archives</span>
-            </div>
-            <span class="text-pink-400">→</span>
+        <div class="mt-12 text-center">
+            <a href="archives.html" class="inline-block bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold shadow-lg active:scale-95 transition-all">
+                View All Memories 📂
+            </a>
         </div>
     </div>
 
-    <div id="modal" onclick="closeModal()">
-        <div class="bg-white p-8 rounded-[2.5rem] max-w-[440px] w-full mx-4 shadow-2xl border-2 border-pink-50 relative animate-in fade-in zoom-in duration-300" onclick="event.stopPropagation()">
-            <h3 id="modal-title" class="text-pink-600 font-bold mb-5 border-b-2 border-pink-100 pb-4 text-lg text-center leading-relaxed"></h3>
-            
-            <div id="modal-content" class="modal-content-box text-black text-[17px] leading-[1.8] overflow-y-auto max-h-[450px] pr-2 text-justify font-bold tracking-tight"></div>
-            
-            <button onclick="closeModal()" class="mt-8 w-full bg-slate-950 text-white text-[12px] py-4 rounded-2xl font-bold uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">Close</button>
+    <div id="modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-5 backdrop-blur-md" onclick="closeModal()">
+        <div class="bg-white p-6 rounded-[2.5rem] max-w-[450px] w-full max-h-[85vh] overflow-y-auto relative" onclick="event.stopPropagation()">
+            <img id="modal-img" class="hidden w-full h-56 object-cover rounded-[1.8rem] mb-5 shadow-sm">
+            <h2 id="modal-title" class="text-xl font-bold text-pink-600 border-b-2 border-pink-50 pb-4 mb-4 text-center leading-relaxed"></h2>
+            <p id="modal-content" class="text-slate-800 text-[16px] leading-[1.8] text-justify font-bold whitespace-pre-line pr-1"></p>
+            <button onclick="closeModal()" class="w-full mt-8 bg-pink-500 text-white py-4 rounded-2xl font-bold shadow-pink-200 shadow-lg active:scale-95 transition-all">Close</button>
         </div>
     </div>
 
     <script>
-        // PWA Service Worker Register
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js');
-            });
-        }
-
         const firebaseConfig = {
             apiKey: "AIzaSyCRUag3lfCii8IHnNGsW2TvcK-b8_YuqUY",
             authDomain: "oursecretdiary-d767a.firebaseapp.com",
@@ -130,87 +55,61 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // ပို့စ်များဆွဲထုတ်ခြင်း
-        database.ref('allPosts').on('value', (snap) => {
-            const container = document.getElementById('recentDisplay');
+        // နောက်ဆုံးတင်တဲ့ ၅ ခုပဲ ဆွဲထုတ်မယ်
+        database.ref('allPosts').orderByChild('timestamp').limitToLast(5).on('value', (snap) => {
+            const container = document.getElementById('latestPosts');
             container.innerHTML = "";
-            if(!snap.exists()) return;
-            
+
+            if (!snap.exists()) {
+                container.innerHTML = "<p class='text-center text-slate-400'>မှတ်တမ်းမရှိသေးပါ</p>";
+                return;
+            }
+
             let posts = [];
-            snap.forEach(c => { 
-                let data = c.val();
-                data.key = c.key; 
-                posts.unshift(data); 
+            snap.forEach(child => {
+                let data = child.val();
+                data.key = child.key;
+                posts.unshift(data); // နောက်ဆုံးတင်တာ ထိပ်ရောက်အောင်စီ
             });
 
             posts.forEach(p => {
-                container.innerHTML += `
-                    <div class="bg-gray-50 p-4 rounded-2xl border border-white shadow-sm mb-3">
-                        <h4 class="text-[11px] font-bold text-slate-800">${p.title}</h4>
-                        <p class="text-[10px] text-slate-600 mt-1 line-clamp-2">${p.content.substring(0, 80)}...</p>
-                        <button onclick="fetchAndOpen('${p.key}')" class="text-pink-500 text-[10px] font-bold mt-2 flex items-center gap-1 italic">
-                            ဆက်ဖတ်ရန် <span class="text-xs">→</span>
-                        </button>
-                    </div>`;
+                let card = `
+                    <div class="post-card border border-pink-50">
+                        ${p.imageUrl ? `<img src="${p.imageUrl}" class="w-full h-52 object-cover">` : ''}
+                        <div class="p-6">
+                            <h2 class="text-xl font-bold text-slate-800 mb-2 leading-tight">${p.title}</h2>
+                            <p class="text-slate-500 text-sm line-clamp-2 leading-relaxed mb-4">${p.content}</p>
+                            <button onclick="openFull('${p.key}')" class="text-pink-500 font-black text-xs uppercase tracking-widest flex items-center">
+                                Continue Reading <span class="ml-2">→</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
             });
         });
 
-        // Modal ဖွင့်ရန်
-        function fetchAndOpen(key) {
-            database.ref('allPosts/' + key).once('value').then((snap) => {
+        function openFull(key) {
+            database.ref('allPosts/' + key).once('value', snap => {
                 const p = snap.val();
                 document.getElementById('modal-title').innerText = p.title;
                 document.getElementById('modal-content').innerText = p.content;
-                document.getElementById('modal').style.display = 'flex';
-                document.body.style.overflow = 'hidden'; 
+                const img = document.getElementById('modal-img');
+                if(p.imageUrl) {
+                    img.src = p.imageUrl;
+                    img.classList.remove('hidden');
+                } else {
+                    img.classList.add('hidden');
+                }
+                document.getElementById('modal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
             });
         }
 
-        function closeModal() { 
-            document.getElementById('modal').style.display = 'none'; 
-            document.body.style.overflow = 'auto'; 
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
         }
-
-        // Music & Timer
-        let currentSong = 0;
-        const songs = ["song1.mp3", "song2.mp3", "song3.mp3", "song4.mp3", "song5.mp3"];
-        let audio = new Audio();
-        let isPlaying = false;
-        function updateUI() {
-            document.getElementById('song-name').innerText = "Track " + (currentSong + 1);
-            document.getElementById('play-icon').innerText = isPlaying ? "⏸" : "▶️";
-            document.getElementById('song-status').innerText = isPlaying ? "Playing" : "Paused";
-        }
-        function toggleMusic() {
-            if(!audio.src || audio.src.includes('undefined')) audio.src = songs[currentSong];
-            if (!isPlaying) { audio.play().then(() => { isPlaying = true; updateUI(); }).catch(e => console.log(e)); }
-            else { audio.pause(); isPlaying = false; updateUI(); }
-        }
-        function playNext() { currentSong = (currentSong + 1) % songs.length; audio.src = songs[currentSong]; isPlaying = true; audio.play().then(() => updateUI()); }
-        function playPrev() { currentSong = (currentSong - 1 + songs.length) % songs.length; audio.src = songs[currentSong]; isPlaying = true; audio.play().then(() => updateUI()); }
-        audio.onended = () => playNext();
-
-        const startDate = new Date("Jul 07, 2021 00:00:00").getTime(); 
-        setInterval(() => {
-            const diff = new Date().getTime() - startDate;
-            document.getElementById("timer").innerHTML = Math.floor(diff/(1000*60*60*24)) + "d " + Math.floor((diff%(1000*60*60*24))/(1000*60*60)) + "h " + Math.floor((diff%(1000*60*60))/(1000*60)) + "m";
-        }, 1000);
-
-        function createHeart() {
-            const box = document.getElementById('msgBox');
-            if(!box) return;
-            const heart = document.createElement('div');
-            heart.innerHTML = '❤️';
-            heart.className = 'heart-particle';
-            const tx = (Math.random() - 0.5) * 300;
-            const ty = (Math.random() - 0.5) * 150;
-            heart.style.setProperty('--tx', `${tx}px`);
-            heart.style.setProperty('--ty', `${ty}px`);
-            heart.style.left = '50%'; heart.style.top = '50%';
-            box.appendChild(heart);
-            setTimeout(() => heart.remove(), 2000);
-        }
-        setInterval(createHeart, 250);
     </script>
 </body>
 </html>
