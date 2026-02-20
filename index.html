@@ -25,7 +25,7 @@
         .box-1, .box-2, .box-3 { grid-column: span 2; }
         .box-music, .box-updates, .box-archive { grid-column: span 6; }
         
-        /* Message Box - ကျဉ်းကျဉ်းလေးနဲ့ မိုက်မိုက်လေး */
+        /* Message Box */
         .premium-msg-box {
             background: #111111;
             border: 2px solid #fbcfe8;
@@ -33,7 +33,7 @@
             position: relative;
             overflow: hidden;
             height: 90px; 
-            max-width: 440px; /* ဘေးအကျယ်ကို ထိန်းလိုက်သည် */
+            max-width: 440px;
             margin: 0 auto;
             display: flex;
             align-items: center;
@@ -41,10 +41,10 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
 
-        /* Heart Particles - ပိုလင်းအောင်လုပ်ထားသည် */
+        /* Heart Particles */
         .heart-particle {
             position: absolute;
-            color: #ff4d94; /* အရောင်ပိုတောက်စေရန် */
+            color: #ff4d94;
             font-size: 14px;
             pointer-events: none;
             text-shadow: 0 0 10px #ff4d94;
@@ -88,7 +88,7 @@
             <p class="text-[10px] font-bold text-slate-700">07.07.2021</p>
         </div>
 
-        <div onclick="location.href='archives.html'" class="box-2 app-card p-4 flex flex-col items-center justify-center text-center cursor-pointer">
+        <div onclick="window.open('archives.html', '_blank')" class="box-2 app-card p-4 flex flex-col items-center justify-center text-center cursor-pointer">
             <p class="text-[9px] font-bold text-slate-700">အမှတ်တရ<br>စာစုများ</p>
             <div class="text-pink-400 text-xs mt-1">❤️</div>
         </div>
@@ -119,7 +119,7 @@
             <div id="recentDisplay" class="space-y-4"></div>
         </div>
 
-        <div onclick="location.href='archives.html'" class="box-archive app-card p-5 flex justify-between items-center cursor-pointer">
+        <div onclick="window.open('archives.html', '_blank')" class="box-archive app-card p-5 flex justify-between items-center cursor-pointer">
             <div class="flex items-center gap-4">
                 <div class="w-8 h-8 bg-pink-50 rounded-xl flex items-center justify-center">📂</div>
                 <span class="text-[10px] font-bold text-slate-500 uppercase">Memory Archives</span>
@@ -137,14 +137,13 @@
     </div>
 
     <script>
-        // အသည်းပုံလေးတွေကို ပိုသိသာအောင်လုပ်ထားသည်
         function createHeart() {
             const box = document.getElementById('msgBox');
             const heart = document.createElement('div');
             heart.innerHTML = '❤️';
             heart.className = 'heart-particle';
             
-            const tx = (Math.random() - 0.5) * 300; // ပိုကားထွက်အောင်
+            const tx = (Math.random() - 0.5) * 300;
             const ty = (Math.random() - 0.5) * 150;
             heart.style.setProperty('--tx', `${tx}px`);
             heart.style.setProperty('--ty', `${ty}px`);
@@ -154,9 +153,8 @@
             box.appendChild(heart);
             setTimeout(() => heart.remove(), 2000);
         }
-        setInterval(createHeart, 250); // အပွင့်မြန်နှုန်းတိုးလိုက်သည်
+        setInterval(createHeart, 250);
 
-        // Music Player & Firebase (အရင်အတိုင်း)
         let currentSong = 0;
         const songs = ["song1.mp3", "song2.mp3", "song3.mp3", "song4.mp3", "song5.mp3"];
         let audio = new Audio();
@@ -170,7 +168,7 @@
 
         function toggleMusic() {
             if(!audio.src || audio.src.includes('undefined')) audio.src = songs[currentSong];
-            if (!isPlaying) { audio.play().then(() => { isPlaying = true; updateUI(); }); }
+            if (!isPlaying) { audio.play().then(() => { isPlaying = true; updateUI(); }).catch(e => console.log("Audio play failed", e)); }
             else { audio.pause(); isPlaying = false; updateUI(); }
         }
         function playNext() { currentSong = (currentSong + 1) % songs.length; audio.src = songs[currentSong]; isPlaying = true; audio.play().then(() => updateUI()); }
