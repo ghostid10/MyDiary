@@ -12,7 +12,6 @@
         body { font-family: 'Padauk', sans-serif; background: #f0f2f5; overflow-x: hidden; }
         .handwriting { font-family: 'Dancing Script', cursive; }
         
-        /* 3D App Style Cards */
         .app-card { 
             background: #ffffff; 
             border-radius: 2rem; 
@@ -25,7 +24,6 @@
         .box-1, .box-2, .box-3 { grid-column: span 2; }
         .box-music, .box-updates, .box-archive { grid-column: span 6; }
         
-        /* Message Box */
         .premium-msg-box {
             background: #111111;
             border: 2px solid #fbcfe8;
@@ -41,7 +39,6 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
 
-        /* Heart Particles */
         .heart-particle {
             position: absolute;
             color: #ff4d94;
@@ -116,7 +113,8 @@
 
         <div class="box-updates app-card p-6">
             <p class="text-[9px] text-pink-500 font-bold mb-4 uppercase tracking-widest border-b pb-1">Latest Updates</p>
-            <div id="recentDisplay" class="space-y-4"></div>
+            <div id="recentDisplay" class="space-y-4">
+                </div>
         </div>
 
         <div onclick="window.open('archives.html', '_blank')" class="box-archive app-card p-5 flex justify-between items-center cursor-pointer">
@@ -139,17 +137,16 @@
     <script>
         function createHeart() {
             const box = document.getElementById('msgBox');
+            if(!box) return;
             const heart = document.createElement('div');
             heart.innerHTML = '❤️';
             heart.className = 'heart-particle';
-            
             const tx = (Math.random() - 0.5) * 300;
             const ty = (Math.random() - 0.5) * 150;
             heart.style.setProperty('--tx', `${tx}px`);
             heart.style.setProperty('--ty', `${ty}px`);
             heart.style.left = '50%';
             heart.style.top = '50%';
-            
             box.appendChild(heart);
             setTimeout(() => heart.remove(), 2000);
         }
@@ -168,7 +165,7 @@
 
         function toggleMusic() {
             if(!audio.src || audio.src.includes('undefined')) audio.src = songs[currentSong];
-            if (!isPlaying) { audio.play().then(() => { isPlaying = true; updateUI(); }).catch(e => console.log("Audio play failed", e)); }
+            if (!isPlaying) { audio.play().then(() => { isPlaying = true; updateUI(); }).catch(e => console.log(e)); }
             else { audio.pause(); isPlaying = false; updateUI(); }
         }
         function playNext() { currentSong = (currentSong + 1) % songs.length; audio.src = songs[currentSong]; isPlaying = true; audio.play().then(() => updateUI()); }
@@ -187,16 +184,20 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        database.ref('allPosts').orderByChild('timestamp').limitToLast(5).on('value', (snap) => {
-            const container = document.getElementById('recentDisplay'); container.innerHTML = "";
+        // ပို့စ်တွေအကုန်ပေါ်စေရန် ပြင်ထားသောအပိုင်း
+        database.ref('allPosts').on('value', (snap) => {
+            const container = document.getElementById('recentDisplay'); 
+            container.innerHTML = "";
             if(!snap.exists()) return;
-            let posts = []; snap.forEach(c => posts.unshift(c.val()));
+            let posts = []; 
+            snap.forEach(c => { posts.unshift(c.val()); });
             posts.forEach(p => {
-                container.innerHTML += `<div class="bg-gray-50 p-3 rounded-xl border border-white">
-                    <h4 class="text-[10px] font-bold text-slate-800">${p.title}</h4>
-                    <p class="text-[9px] text-slate-500 mt-1">${p.content.substring(0, 45)}...</p>
-                    <button onclick="openModal('${p.title.replace(/'/g, "\\'")}', '${p.content.replace(/'/g, "\\'")}')" class="text-pink-400 text-[9px] font-bold mt-1">Read More →</button>
-                </div>`;
+                container.innerHTML += `
+                    <div class="bg-gray-50 p-3 rounded-xl border border-white shadow-sm mb-3">
+                        <h4 class="text-[10px] font-bold text-slate-800">${p.title}</h4>
+                        <p class="text-[9px] text-slate-500 mt-1">${p.content.substring(0, 60)}...</p>
+                        <button onclick="openModal('${p.title.replace(/'/g, "\\'")}', '${p.content.replace(/'/g, "\\'")}')" class="text-pink-400 text-[9px] font-bold mt-1">ဆက်ဖတ်ရန် →</button>
+                    </div>`;
             });
         });
 
