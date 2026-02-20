@@ -3,99 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Our Private Diary & Chat</title>
+    <title>Our Organized Diary</title>
     
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Our%20Diary%22,%22short_name%22:%22Diary%22,%22start_url%22:%22./index.html%22,%22display%22:%22standalone%22,%22background_color%22:%22#020205%22,%22theme_color%22:%22#4338ca%22,%22icons%22:[{%22src%22:%22profile.jpg%22,%22sizes%22:%22192x192%22,%22type%22:%22image/jpg%22}]} ">
-    <meta name="theme-color" content="#4338ca">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        body { 
-            font-family: 'Padauk', sans-serif; 
-            background: radial-gradient(circle at top, #1a1a2e 0%, #020205 100%);
-            color: #1a1a2e; min-height: 100vh; scroll-behavior: smooth;
-        }
+        body { font-family: 'Padauk', sans-serif; background: #020205; color: #ffffff; min-height: 100vh; }
 
-        .stars-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
-        .star { position: absolute; background: white; border-radius: 50%; animation: twinkle var(--duration) infinite ease-in-out; }
-        @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(1); } 50% { opacity: 1; transform: scale(1.5); } }
-
-        .moon-container { position: fixed; top: 40px; right: 40px; width: 50px; height: 50px; z-index: -1; filter: drop-shadow(0 0 15px rgba(254, 243, 199, 0.5)); transform: rotate(-15deg); }
-
+        /* ✨ Enhanced 3D Glassmorphism */
         .floating-3d {
-            background: #ffffff; border-radius: 2rem;
-            box-shadow: 0 18px 35px rgba(0, 0, 0, 0.6), 0 5px 12px rgba(0, 0, 0, 0.4);
+            background: rgba(255, 255, 255, 0.95); border-radius: 24px;
+            box-shadow: 12px 12px 25px rgba(0, 0, 0, 0.7), -4px -4px 15px rgba(255, 255, 255, 0.05);
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: #1e1b4b;
         }
 
-        .pop-on-click:hover { transform: translateY(-6px) scale(1.02); }
-        .pop-on-click:active { transform: translateY(2px) scale(0.98); }
+        .button-3d {
+            background: #ffffff; border-radius: 14px;
+            box-shadow: 0 6px 0 #cbd5e1, 0 10px 20px rgba(0,0,0,0.5);
+            transition: all 0.1s; cursor: pointer;
+        }
+        .button-3d:active { transform: translateY(4px); box-shadow: 0 1px 0 #cbd5e1; }
 
-        /* Chat Styles */
-        #chat-container { height: 300px; overflow-y: auto; scroll-behavior: smooth; }
-        .msg-bubble { padding: 10px 15px; border-radius: 18px; max-width: 80%; margin-bottom: 8px; font-weight: bold; font-size: 13px; }
-        .msg-sent { background: #4338ca; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .msg-received { background: #f3f4f6; color: #1f2937; align-self: flex-start; border-bottom-left-radius: 4px; }
+        /* 💬 Chat Bubbles */
+        #chat-container { height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px; }
+        .msg { padding: 10px 14px; border-radius: 18px; font-size: 11px; font-weight: bold; max-width: 80%; }
+        .msg-me { background: #4338ca; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .msg-them { background: #f1f5f9; color: #1e1b4b; align-self: flex-start; border-bottom-left-radius: 2px; }
 
-        .heart { position: absolute; color: #ff4d6d; pointer-events: none; animation: heartFloat 3s linear infinite; }
-        @keyframes heartFloat { 0% { transform: translateY(0) scale(0); opacity: 0; } 100% { transform: translateY(-130px) scale(1.5); opacity: 0; } }
+        /* 📂 Archive Styles (စနစ်တကျ ခွဲခြားရန်) */
+        .archive-year { background: #1e1b4b; padding: 12px 20px; border-radius: 15px; margin-bottom: 10px; cursor: pointer; font-weight: 900; border: 1px solid #4338ca; }
+        .archive-month { background: #2e2a5e; padding: 10px 20px; border-radius: 12px; margin: 5px 0 5px 20px; cursor: pointer; font-size: 13px; }
+        .memory-entry { background: #ffffff; color: #1e1b4b; padding: 15px; border-radius: 15px; margin: 5px 0 5px 40px; border-left: 4px solid #4338ca; box-shadow: 5px 5px 15px rgba(0,0,0,0.2); }
+        
+        /* Modal Animation */
+        #modal { background: rgba(0,0,0,0.95); backdrop-blur: 10px; }
     </style>
 </head>
-<body class="p-6 pb-24">
+<body class="p-4">
 
-    <div class="stars-container" id="starsContainer"></div>
-    <div class="moon-container">
-        <svg viewBox="0 0 100 100"><path d="M50 15 C30 15 15 35 15 55 C15 75 30 95 55 95 C40 85 35 65 35 50 C35 35 45 20 65 10 C60 12 55 15 50 15Z" fill="#fef3c7" /></svg>
+    <div class="max-w-[450px] mx-auto space-y-6 pb-28">
+        <div class="flex justify-between items-center gap-2">
+            <div class="button-3d px-3 py-2 text-[8px] font-bold text-indigo-900">ပူတူးလေးထံသို့ ❤️</div>
+            <div class="floating-3d bg-white px-4 py-2 rounded-full text-[10px] font-black text-indigo-700 flex-1 text-center">✨ တို့နှစ်ယောက်ရဲ့ ဒိုင်ယာရီ ✨</div>
+            <div class="w-10 h-10 rounded-xl overflow-hidden border-2 border-white shadow-2xl"><img src="profile.jpg" class="w-full h-full object-cover"></div>
+        </div>
+
+        <div class="floating-3d p-4 bg-slate-900/80 text-center border border-indigo-500/30">
+            <p class="text-white italic text-[11px] font-bold">"မင်းအပေါ်ထားတဲ့ ငါ့အချစ်တွေက ထာဝရပါ"</p>
+        </div>
+
+        <div class="flex gap-4 items-stretch">
+            <div class="flex-[1.8] floating-3d p-4 flex flex-col">
+                <h3 class="text-[9px] font-black text-indigo-600 mb-2 uppercase">💬 Secret Chat</h3>
+                <div id="chat-container" class="bg-slate-50/50 rounded-2xl mb-2"></div>
+                <div class="flex gap-1">
+                    <input id="chatInput" type="text" placeholder="စာရိုက်ပါ..." class="w-full bg-slate-100 rounded-xl px-3 py-2 text-[10px] outline-none text-black">
+                    <button onclick="sendMessage()" class="button-3d bg-indigo-600 text-white px-4 text-[10px] font-bold">ပို့</button>
+                </div>
+            </div>
+
+            <div class="flex-1 flex flex-col gap-3">
+                <div class="floating-3d p-3 flex flex-col items-center justify-center bg-slate-50/50 flex-1">
+                    <span class="text-[8px] text-indigo-500 font-black mb-3">SONGS</span>
+                    <button onclick="toggleMusic()" class="button-3d w-12 h-12 rounded-full flex items-center justify-center text-indigo-900"><span id="playIcon">⏸</span></button>
+                    <div class="flex gap-2 w-full mt-4">
+                        <button onclick="prevSong()" class="button-3d flex-1 py-2 text-xs">⏮</button>
+                        <button onclick="nextSong()" class="button-3d flex-1 py-2 text-xs">⏭</button>
+                    </div>
+                    <audio id="bgMusic" onended="nextSong()"></audio>
+                </div>
+                <div class="floating-3d bg-indigo-950 p-3 text-center border-b-4 border-indigo-900">
+                    <p class="text-[7px] text-indigo-300 font-black">LOVE DAYS</p>
+                    <p id="counter" class="text-[13px] font-black text-white"></p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="max-w-[450px] mx-auto space-y-10">
-        <div class="flex justify-between items-center pt-4">
-            <div class="floating-3d px-5 py-3 text-[10px] font-bold pop-on-click text-indigo-900">For You ❤️</div>
-            <div class="w-14 h-14 rounded-2xl overflow-hidden border-4 border-white shadow-2xl">
-                <img src="profile.jpg" class="w-full h-full object-cover">
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-[400px] z-50">
+        <div onclick="toggleMemories()" class="button-3d p-4 text-center bg-white border-2 border-indigo-100">
+            <p class="text-xs text-indigo-700 font-black tracking-widest">MEMORIES ❤️</p>
+            <p class="text-[9px] text-slate-400 font-bold">အမှတ်တရများကို အချိန်အလိုက် ရွေးဖတ်ရန်</p>
+        </div>
+    </div>
+
+    <div id="memories-overlay" class="hidden fixed inset-0 z-[100] p-6 overflow-y-auto">
+        <div class="flex justify-between items-center mb-8 border-b border-indigo-800 pb-4">
+            <div>
+                <h3 class="text-indigo-400 font-black text-xl tracking-tighter">Diary Archive</h3>
+                <p class="text-[10px] text-indigo-200 opacity-60">အချိန်ကာလအလိုက် စနစ်တကျ သိမ်းဆည်းထားသည်</p>
             </div>
+            <button onclick="toggleMemories()" class="w-10 h-10 rounded-full bg-indigo-900/50 text-white font-bold">✕</button>
         </div>
+        <div id="archive-container" class="pb-24"></div>
+    </div>
 
-        <div class="grid grid-cols-3 gap-4">
-            <div class="floating-3d p-4 text-center"><p class="text-[8px] text-indigo-600 font-black">BIRTHDAY</p><p class="text-[11px] font-bold">07.07.2021</p></div>
-            <div onclick="document.getElementById('latest-section').scrollIntoView();" class="floating-3d p-4 text-center bg-indigo-50 cursor-pointer"><p class="text-[8px] text-indigo-600 font-black">MEMORIES</p><p class="text-[11px] font-bold">စာမျက်နှာ ❤️</p></div>
-            <div class="bg-indigo-900 p-4 text-center rounded-[1.5rem]"><p class="text-[8px] text-indigo-200 font-black">LOVE DAYS</p><p id="counter" class="text-[11px] font-bold text-white"></p></div>
-        </div>
-
-        <div class="floating-3d p-6 space-y-4">
-            <h3 class="text-[12px] font-black text-indigo-600 uppercase tracking-widest flex items-center gap-2">
-                💬 Secret Messages
-            </h3>
-            <div id="chat-container" class="flex flex-col pr-2">
-                </div>
-            <div class="flex gap-2 mt-2">
-                <input id="chatInput" type="text" placeholder="စာလေးရေးလိုက်ပါ..." class="flex-1 bg-gray-100 border-none rounded-xl px-4 py-3 text-[13px] focus:ring-2 focus:ring-indigo-500 outline-none">
-                <button onclick="sendMessage()" class="bg-indigo-600 text-white px-5 py-3 rounded-xl font-bold text-[13px] pop-on-click shadow-lg">ပို့မယ်</button>
+    <div id="modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-6">
+        <div class="bg-white rounded-[30px] p-8 max-w-[360px] w-full shadow-2xl relative text-indigo-950">
+            <h2 id="modal-title" class="text-xl font-black mb-1"></h2>
+            <p id="modal-date" class="text-[10px] text-slate-400 mb-4 font-bold"></p>
+            <div id="modal-image-container" class="mb-4 hidden">
+                <img id="modal-image" class="w-full rounded-2xl shadow-lg border-4 border-white" src="">
             </div>
-        </div>
-
-        <div class="floating-3d p-6 flex items-center justify-between">
-            <div class="flex flex-col"><span class="text-[10px] text-indigo-500 font-black">MUSIC</span><span class="text-[13px] font-black text-black">Track <span id="trackNo">1</span></span></div>
-            <div class="flex items-center gap-3">
-                <button onclick="prevSong()" class="w-10 h-10 bg-white rounded-xl shadow-md flex items-center justify-center pop-on-click">⏮</button>
-                <button onclick="toggleMusic()" class="w-12 h-12 bg-indigo-50 rounded-full shadow-lg flex items-center justify-center border-2 border-white pop-on-click"><span id="playIcon">⏸</span></button>
-                <button onclick="nextSong()" class="w-10 h-10 bg-white rounded-xl shadow-md flex items-center justify-center pop-on-click">⏭</button>
-            </div>
-            <audio id="bgMusic" onended="nextSong()"></audio>
-        </div>
-
-        <div class="space-y-8" id="latest-section">
-            <h3 class="text-[13px] font-black text-indigo-200 uppercase tracking-widest italic">Timeline</h3>
-            <div id="latestPosts" class="space-y-8"></div>
+            <div id="modal-content" class="text-[14px] leading-relaxed max-h-[300px] overflow-y-auto pr-2"></div>
+            <button onclick="closeModal()" class="w-full mt-8 button-3d py-4 font-black bg-indigo-600 text-white">ပိတ်မည်</button>
         </div>
     </div>
 
     <script>
-        // Firebase Configuration (Same as yours)
+        // --- Firebase (Keep Original) ---
         const firebaseConfig = {
             apiKey: "AIzaSyCRUag3lfCii8IHnNGsW2TvcK-b8_YuqUY",
             authDomain: "oursecretdiary-d767a.firebaseapp.com",
@@ -108,89 +128,110 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // --- Chat Logic ---
-        const chatContainer = document.getElementById('chat-container');
-        const chatInput = document.getElementById('chatInput');
+        if(!localStorage.getItem('myChatId')) localStorage.setItem('myChatId', 'u_' + Math.random().toString(36).substr(2, 5));
+        const myId = localStorage.getItem('myChatId');
 
+        // --- Organized Archive Logic ---
+        function toggleMemories() { document.getElementById('memories-overlay').classList.toggle('hidden'); }
+
+        database.ref('allPosts').on('value', snap => {
+            const container = document.getElementById('archive-container');
+            container.innerHTML = "";
+            let archive = {};
+
+            snap.forEach(c => {
+                const p = c.val();
+                const d = new Date(p.timestamp || Date.now());
+                const year = d.getFullYear();
+                const month = d.toLocaleString('my-MM', { month: 'long' });
+
+                if(!archive[year]) archive[year] = {};
+                if(!archive[year][month]) archive[year][month] = [];
+                archive[year][month].push({...p, key: c.key, dateStr: d.toLocaleDateString('my-MM', { day: 'numeric', month: 'short', year: 'numeric' })});
+            });
+
+            // စနစ်တကျ အစီအစဉ်လိုက် ထုတ်ပြခြင်း
+            Object.keys(archive).sort((a,b) => b-a).forEach(year => {
+                const yearDiv = document.createElement('div');
+                yearDiv.className = "archive-year";
+                yearDiv.innerHTML = `📅 ${year} ခုနှစ်`;
+                const monthContainer = document.createElement('div');
+                monthContainer.className = "hidden";
+                
+                yearDiv.onclick = () => monthContainer.classList.toggle('hidden');
+
+                Object.keys(archive[year]).forEach(month => {
+                    const monthDiv = document.createElement('div');
+                    monthDiv.className = "archive-month";
+                    monthDiv.innerHTML = `🌙 ${month}`;
+                    const postContainer = document.createElement('div');
+                    postContainer.className = "hidden";
+
+                    monthDiv.onclick = (e) => { e.stopPropagation(); postContainer.classList.toggle('hidden'); };
+
+                    archive[year][month].sort((a,b) => b.timestamp - a.timestamp).forEach(post => {
+                        const entry = document.createElement('div');
+                        entry.className = "memory-entry";
+                        entry.innerHTML = `<div class="font-black text-sm">${post.title}</div><div class="text-[10px] opacity-60">${post.dateStr}</div>`;
+                        entry.onclick = (e) => { e.stopPropagation(); openModal(post); };
+                        postContainer.appendChild(entry);
+                    });
+
+                    monthDiv.appendChild(postContainer);
+                    monthContainer.appendChild(monthDiv);
+                });
+
+                container.appendChild(yearDiv);
+                container.appendChild(monthContainer);
+            });
+        });
+
+        function openModal(post) {
+            document.getElementById('modal-title').innerText = post.title;
+            document.getElementById('modal-date').innerText = new Date(post.timestamp).toLocaleString();
+            document.getElementById('modal-content').innerText = post.content || '';
+            const imgCont = document.getElementById('modal-image-container');
+            const img = document.getElementById('modal-image');
+            if(post.imageUrl) { img.src = post.imageUrl; imgCont.classList.remove('hidden'); }
+            else { imgCont.classList.add('hidden'); }
+            document.getElementById('modal').classList.remove('hidden');
+        }
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+
+        // --- Chat & Others ---
         function sendMessage() {
-            const text = chatInput.value.trim();
-            if (text === "") return;
-            
-            // စာပို့တဲ့သူရဲ့ အမည်ကို သတ်မှတ်နိုင်ဖို့ (ဥပမာ- "A" သို့မဟုတ် "B")
-            // လောလောဆယ် ရိုးရိုးပဲ ပို့လိုက်မယ်
-            database.ref('messages').push({
-                text: text,
-                timestamp: Date.now(),
-                sender: "user1" // ဒါကို ပြောင်းပြီး သုံးလို့ရတယ်
-            });
-            chatInput.value = "";
+            const input = document.getElementById('chatInput');
+            if(!input.value.trim()) return;
+            database.ref('messages').push({ text: input.value.trim(), timestamp: Date.now(), senderId: myId });
+            input.value = "";
         }
 
-        database.ref('messages').limitToLast(20).on('value', snap => {
-            chatContainer.innerHTML = "";
-            snap.forEach(child => {
-                const msg = child.val();
+        database.ref('messages').limitToLast(15).on('value', snap => {
+            const cont = document.getElementById('chat-container');
+            cont.innerHTML = "";
+            snap.forEach(c => {
+                const m = c.val();
                 const div = document.createElement('div');
-                div.className = `msg-bubble ${msg.sender === "user1" ? 'msg-sent' : 'msg-received'}`;
-                div.innerText = msg.text;
-                chatContainer.appendChild(div);
+                div.className = `msg ${m.senderId === myId ? 'msg-me' : 'msg-them'}`;
+                div.innerText = m.text;
+                cont.appendChild(div);
             });
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            cont.scrollTop = cont.scrollHeight;
         });
-
-        // Enter key နဲ့ စာပို့လို့ရအောင်
-        chatInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") sendMessage();
-        });
-
-        // --- Visuals & Counter ---
-        function createStars() {
-            const container = document.getElementById('starsContainer');
-            for(let i=0; i<100; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                star.style.width = Math.random() * 3 + 'px';
-                star.style.height = star.style.width;
-                star.style.left = Math.random() * 100 + '%';
-                star.style.top = Math.random() * 100 + '%';
-                star.style.setProperty('--duration', Math.random() * 3 + 2 + 's');
-                container.appendChild(star);
-            }
-        }
-        createStars();
 
         function updateCounter() {
-            const diff = new Date() - new Date("2024-05-21");
-            const d = Math.floor(diff / 86400000);
-            document.getElementById('counter').innerText = `${d} Days`;
+            const d = Math.floor((new Date() - new Date("2024-05-21")) / 86400000);
+            document.getElementById('counter').innerText = d + " Days";
         }
-        setInterval(updateCounter, 1000); updateCounter();
+        updateCounter();
 
-        // --- Posts Logic ---
-        database.ref('allPosts').limitToLast(5).on('value', snap => {
-            const container = document.getElementById('latestPosts');
-            container.innerHTML = "";
-            let posts = [];
-            snap.forEach(c => { let d = c.val(); d.key = c.key; posts.unshift(d); });
-            posts.forEach(p => {
-                container.innerHTML += `
-                    <div class="floating-3d p-8 pop-on-click mb-8">
-                        <h4 class="font-black text-black text-[16px] mb-3">${p.title || 'Memory'}</h4>
-                        <p class="text-gray-600 text-[12px] font-bold line-clamp-2">${p.content || ''}</p>
-                    </div>`;
-            });
-        });
-
-        // --- Music Player Logic ---
+        // Music Logic
         let track = 1; const player = document.getElementById('bgMusic');
-        function loadSong(t) {
-            player.src = `song${t}.mp3`; document.getElementById('trackNo').innerText = t;
-            player.play().catch(() => {});
-        }
+        function loadSong(t) { player.src = `song${t}.mp3`; player.play().catch(()=>{}); }
         loadSong(track);
         function toggleMusic() {
-            const icon = document.getElementById('playIcon');
-            if(player.paused) { player.play(); icon.innerText = "⏸"; } else { player.pause(); icon.innerText = "▶"; }
+            const btn = document.getElementById('playIcon');
+            if(player.paused) { player.play(); btn.innerText = "⏸"; } else { player.pause(); btn.innerText = "▶"; }
         }
         function nextSong() { track = track < 5 ? track + 1 : 1; loadSong(track); }
         function prevSong() { track = track > 1 ? track - 1 : 5; loadSong(track); }
