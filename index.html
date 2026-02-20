@@ -91,10 +91,10 @@
     </div>
 
     <div id="modal" onclick="closeModal()">
-        <div class="bg-white p-6 rounded-[2.5rem] max-w-[400px] w-full mx-4 shadow-2xl" onclick="event.stopPropagation()">
-            <h3 id="modal-title" class="text-pink-500 font-bold mb-3 border-b border-pink-50 pb-2 text-sm text-center"></h3>
-            <p id="modal-content" class="text-slate-600 text-[11px] leading-relaxed whitespace-pre-line overflow-y-auto max-h-[300px] pr-2"></p>
-            <button onclick="closeModal()" class="mt-6 w-full bg-slate-900 text-white text-[10px] py-3 rounded-xl font-bold uppercase">Close</button>
+        <div class="bg-white p-7 rounded-[2.5rem] max-w-[400px] w-full mx-4 shadow-2xl border border-pink-50" onclick="event.stopPropagation()">
+            <h3 id="modal-title" class="text-pink-600 font-bold mb-4 border-b border-pink-100 pb-3 text-base text-center"></h3>
+            <p id="modal-content" class="text-slate-900 text-[14px] leading-relaxed overflow-y-auto max-h-[350px] pr-2 text-justify font-medium" style="white-space: pre-line;"></p>
+            <button onclick="closeModal()" class="mt-8 w-full bg-slate-900 text-white text-[11px] py-4 rounded-2xl font-bold uppercase tracking-widest active:scale-95 transition">Close</button>
         </div>
     </div>
 
@@ -111,7 +111,7 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // ပို့စ်တွေကို ဆွဲထုတ်ပြတဲ့နေရာ (လုံးဝ Error မတက်အောင် ပြင်ထားသည်)
+        // ပို့စ်များဆွဲထုတ်ခြင်း
         database.ref('allPosts').on('value', (snap) => {
             const container = document.getElementById('recentDisplay');
             container.innerHTML = "";
@@ -120,22 +120,21 @@
             let posts = [];
             snap.forEach(c => { 
                 let data = c.val();
-                data.key = c.key; // ID ကို သိမ်းထားမယ်
+                data.key = c.key; 
                 posts.unshift(data); 
             });
 
             posts.forEach(p => {
-                const postKey = p.key; 
                 container.innerHTML += `
                     <div class="bg-gray-50 p-3 rounded-xl border border-white shadow-sm mb-3">
                         <h4 class="text-[10px] font-bold text-slate-800">${p.title}</h4>
-                        <p class="text-[9px] text-slate-500 mt-1">${p.content.substring(0, 60)}...</p>
-                        <button onclick="fetchAndOpen('${postKey}')" class="text-pink-400 text-[9px] font-bold mt-1">ဆက်ဖတ်ရန် →</button>
+                        <p class="text-[9px] text-slate-600 mt-1">${p.content.substring(0, 60)}...</p>
+                        <button onclick="fetchAndOpen('${p.key}')" class="text-pink-500 text-[9px] font-bold mt-1">ဆက်ဖတ်ရန် →</button>
                     </div>`;
             });
         });
 
-        // စာသားကို Database ထဲကနေ တိုက်ရိုက်ပြန်ခေါ်ပြီး Modal ဖွင့်ပေးတဲ့ Function
+        // Modal ဖွင့်ရန် Database ထဲကစာကို ပြန်ခေါ်ခြင်း
         function fetchAndOpen(key) {
             database.ref('allPosts/' + key).once('value').then((snap) => {
                 const p = snap.val();
@@ -147,7 +146,7 @@
 
         function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
-        // Music & Timer logic
+        // Music & Timer
         let currentSong = 0;
         const songs = ["song1.mp3", "song2.mp3", "song3.mp3", "song4.mp3", "song5.mp3"];
         let audio = new Audio();
