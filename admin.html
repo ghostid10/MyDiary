@@ -3,44 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Post with Photo</title>
+    <title>Admin - Post Memory</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Padauk', sans-serif; background: #fdf2f8; }
-        .input-box { background: #f9fafb; border-radius: 1.25rem; transition: all 0.3s; }
-        .input-box:focus { background: #ffffff; ring: 2px; ring-color: #f472b6; }
+        body { font-family: 'Padauk', sans-serif; background: #fff1f2; }
     </style>
 </head>
-<body class="p-6 pb-20">
+<body class="p-6">
 
-    <div class="max-w-[400px] mx-auto bg-white p-8 rounded-[2.5rem] shadow-2xl border border-pink-50">
-        <h2 class="text-2xl font-bold text-pink-600 mb-6 text-center">အမှတ်တရအသစ်တင်မယ် 📸</h2>
+    <div class="max-w-[400px] mx-auto bg-white p-8 rounded-[2.5rem] shadow-2xl border border-pink-100">
+        <h2 class="text-2xl font-bold text-pink-600 mb-6 text-center">Memory အသစ်တင်မယ် 📸</h2>
         
-        <div class="space-y-5">
+        <div class="space-y-4">
             <div>
-                <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-widest">Photo (Optional)</label>
+                <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Select Photo</label>
                 <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="previewImage(event)">
-                <div onclick="document.getElementById('imageInput').click()" class="w-full h-48 mt-1 bg-slate-50 rounded-[1.5rem] border-2 border-dashed border-pink-200 flex items-center justify-center cursor-pointer overflow-hidden group">
+                <div onclick="document.getElementById('imageInput').click()" class="w-full h-48 mt-1 bg-slate-50 rounded-[1.5rem] border-2 border-dashed border-pink-200 flex items-center justify-center cursor-pointer overflow-hidden relative">
                     <img id="preview" class="hidden w-full h-full object-cover">
-                    <div id="placeholder" class="text-center group-hover:scale-110 transition-transform">
-                        <span class="text-3xl">🖼️</span>
-                        <p class="text-pink-300 text-xs mt-2 font-bold">ပုံရွေးရန် နှိပ်ပါ</p>
+                    <div id="placeholder" class="text-center">
+                        <span class="text-3xl">📷</span>
+                        <p class="text-pink-300 text-xs font-bold mt-2">ပုံရွေးရန် နှိပ်ပါ</p>
                     </div>
                 </div>
             </div>
 
-            <div>
-                <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-widest">Title</label>
-                <input type="text" id="postTitle" class="input-box w-full p-4 mt-1 outline-none border-none focus:ring-2 focus:ring-pink-300" placeholder="ခေါင်းစဉ်...">
-            </div>
-
-            <div>
-                <label class="text-[10px] font-bold text-slate-400 uppercase ml-2 tracking-widest">Content</label>
-                <textarea id="postContent" rows="5" class="input-box w-full p-4 mt-1 outline-none border-none focus:ring-2 focus:ring-pink-300" placeholder="အကြောင်းအရာ..."></textarea>
-            </div>
+            <input type="text" id="postTitle" class="w-full p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-pink-300" placeholder="ခေါင်းစဉ်...">
+            <textarea id="postContent" rows="5" class="w-full p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-pink-300" placeholder="မှတ်တမ်းအကြောင်းအရာ..."></textarea>
 
             <button onclick="uploadPost()" id="submitBtn" class="w-full bg-pink-500 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all">
                 တင်လိုက်ပြီ ❤️
@@ -61,13 +52,15 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // ပုံ Preview ပြဖို့
         function previewImage(event) {
             const preview = document.getElementById('preview');
             const placeholder = document.getElementById('placeholder');
-            preview.src = URL.createObjectURL(event.target.files[0]);
-            preview.classList.remove('hidden');
-            placeholder.classList.add('hidden');
+            const file = event.target.files[0];
+            if (file) {
+                preview.src = URL.createObjectURL(file);
+                preview.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            }
         }
 
         async function uploadPost() {
@@ -77,15 +70,13 @@
             const btn = document.getElementById('submitBtn');
             const imgbbKey = '9c284cf11b01e2f70757640fb5e2a327';
 
-            if(!title || !content) return alert("စာအရင်ဖြည့်ပါဦးနော်!");
-
+            if(!title || !content) return alert("စာအရင်ဖြည့်ပါဦး");
             btn.disabled = true;
-            btn.innerText = "တင်နေပြီ ခဏစောင့်... 🚀";
+            btn.innerText = "ပုံတင်နေသည်... 🚀";
 
-            let imageUrl = "";
+            let finalImageUrl = "";
 
             try {
-                // ၁။ ပုံရှိရင် ImgBB ဆီ အရင်ပို့မယ်
                 if (imageFile) {
                     let formData = new FormData();
                     formData.append("image", imageFile);
@@ -94,23 +85,23 @@
                         body: formData
                     });
                     const result = await response.json();
-                    imageUrl = result.data.url;
+                    if(result.success) {
+                        finalImageUrl = result.data.url;
+                    }
                 }
 
-                // ၂။ Firebase မှာ သိမ်းမယ်
                 await database.ref('allPosts').push({
                     title: title,
                     content: content,
-                    imageUrl: imageUrl,
+                    imageUrl: finalImageUrl, // Firebase ထဲကို imageUrl ဆိုတဲ့ နာမည်နဲ့ သိမ်းမယ်
                     timestamp: Date.now()
                 });
 
-                alert("အောင်မြင်စွာ တင်ပြီးပါပြီ! ❤️");
+                alert("တင်ပြီးပါပြီ! ❤️");
                 location.reload();
             } catch (e) {
-                alert("မှားယွင်းမှုရှိပါသည်: " + e.message);
+                alert("Error: " + e.message);
                 btn.disabled = false;
-                btn.innerText = "တင်လိုက်ပြီ ❤️";
             }
         }
     </script>
